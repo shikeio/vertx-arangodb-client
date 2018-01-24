@@ -1,0 +1,97 @@
+ext {
+  prometheusVersion = '0.1.0'
+  vertxVersion = '3.5.0'
+}
+
+group = 'io.vertx'
+version = '3.5.0'
+
+repositories {
+  mavenLocal()
+  maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+  mavenCentral()
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+
+configurations {
+  optional
+  compile.extendsFrom optional
+}
+
+dependencies {
+  compile "io.vertx:vertx-core:$vertxVersion"
+  compile "io.vertx:vertx-web:$vertxVersion"
+
+  optional "io.vertx:vertx-codegen:$vertxVersion"
+  optional "io.vertx:vertx-docgen:$vertxVersion"
+  optional "io.vertx:vertx-codetrans:$vertxVersion"
+  optional "io.vertx:vertx-lang-kotlin:$vertxVersion"
+  optional "io.vertx:vertx-lang-groovy:$vertxVersion"
+  optional "io.vertx:vertx-lang-ruby:$vertxVersion"
+  optional "io.vertx:vertx-lang-js:$vertxVersion"
+  optional "io.vertx:vertx-rx-java:$vertxVersion"
+  optional "io.vertx:vertx-rx-java2:$vertxVersion"
+
+  compile "org.jooq:joor:0.9.6"
+
+  testCompile "io.vertx:vertx-unit:$vertxVersion"
+  testCompile 'junit:junit:4.12'
+}
+
+task annotationProcessing(type: JavaCompile, group: 'build') {
+  source = sourceSets.main.java
+  classpath = configurations.compile + configurations.compileOnly
+  destinationDir = project.file('src/main/generated')
+  options.compilerArgs = [
+    "-proc:only",
+    "-processor", "io.vertx.codegen.CodeGenProcessor",
+    "-Acodegen.output=${project.projectDir}/src/main"
+  ]
+}
+
+task docProcessing(type: JavaCompile, group: 'build') {
+  source = sourceSets.main.java
+  classpath = configurations.compile + configurations.compileOnly
+  destinationDir = project.file('src/main/asciidoc')
+  options.compilerArgs = [
+    "-proc:only",
+    "-processor", "io.vertx.docgen.JavaDocGenProcessor",
+    "-Adocgen.output=${project.buildDir}/asciidoc"
+  ]
+}
+
+compileJava {
+  targetCompatibility = 1.8
+  sourceCompatibility = 1.8
+
+  dependsOn annotationProcessing, docProcessing
+}
+
+sourceSets {
+  main {
+    java {
+      srcDirs += 'src/main/generated'
+    }
+  }
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '4.2.1'
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      repository(url: "http://127.0.0.1") {
+        authentication(userName: "root", password: "root")
+      }
+      pom.version = version.toString().replace("-SNAPSHOT", "")
+      pom.artifactId = project.name
+      pom.groupId = 'io.vertx'
+    }
+  }
+}
+
