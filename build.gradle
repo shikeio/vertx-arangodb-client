@@ -23,7 +23,6 @@ configurations {
 
 dependencies {
   compile "io.vertx:vertx-core:$vertxVersion"
-  compile "io.vertx:vertx-web:$vertxVersion"
 
   optional "io.vertx:vertx-codegen:$vertxVersion"
   optional "io.vertx:vertx-docgen:$vertxVersion"
@@ -36,6 +35,7 @@ dependencies {
   optional "io.vertx:vertx-rx-java2:$vertxVersion"
 
   compile "org.jooq:joor:0.9.6"
+  compile 'com.arangodb:arangodb-java-driver:4.3.0'
 
   testCompile "io.vertx:vertx-unit:$vertxVersion"
   testCompile 'junit:junit:4.12'
